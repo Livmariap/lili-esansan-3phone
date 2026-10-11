@@ -229,19 +229,21 @@
             image-rendering: pixelated; 
         }
 
+        /* AJUSTE PARA NÃO CORTAR AS LATERAIS NO FINAL */
         .cartao-recompensa {
             background: linear-gradient(135deg, #ffd700, #ff8c00);
             color: #2c3e50;
-            padding: 15px 15px;
-            font-size: clamp(1.2rem, 5vw, 2rem);
+            padding: 15px;
+            font-size: clamp(1rem, 4.5vw, 1.6rem);
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border: 4px solid #fff;
             position: relative;
-            width: 90%;
-            max-width: 500px;
+            width: 85%; 
+            max-width: 450px;
             text-align: center;
             z-index: 2;
+            box-sizing: border-box;
         }
 
         .texto-final {
@@ -249,9 +251,9 @@
             color: #f1f2f6; 
             padding: 15px;
             border-radius: 5px;
-            font-size: clamp(1rem, 4vw, 1.8rem); 
-            width: 95%;
-            max-width: 600px;
+            font-size: clamp(1rem, 4vw, 1.4rem); 
+            width: 85%;
+            max-width: 450px;
             text-align: center;
             line-height: 1.4;
             box-shadow: 8px 8px 0px rgba(255, 71, 87, 0.6); 
@@ -259,24 +261,25 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             z-index: 2;
             word-wrap: break-word;
+            box-sizing: border-box;
         }
 
         .texto-final strong {
-            font-size: clamp(1.2rem, 5vw, 2.2rem);
+            font-size: clamp(1.2rem, 5vw, 2rem);
             color: #ff6b81; 
             display: block;
             margin-bottom: 8px;
         }
 
         .festinha {
-            font-size: 2rem;
+            font-size: 1.8rem;
             position: absolute;
             animation: flutuar 2s ease-in-out infinite alternate;
         }
 
         @keyframes flutuar {
             0% { transform: translateY(0px) rotate(-10deg); }
-            100% { transform: translateY(-15px) rotate(10deg); }
+            100% { transform: translateY(-10px) rotate(10deg); }
         }
 
         canvas { 
@@ -370,10 +373,10 @@
 
         <div id="tela-recompensa-final" class="tela" style="display: none;">
             <div class="cartao-recompensa">
-                <span class="festinha" style="top:-15px; left:-15px; animation-delay: 0s;">🎈</span>
-                <span class="festinha" style="bottom:-15px; right:-15px; animation-delay: 0.5s;">🎉</span>
-                <span class="festinha" style="top:-15px; right:-15px; animation-delay: 1s;">🎊</span>
-                <span class="festinha" style="bottom:-15px; left:-15px; animation-delay: 1.5s;">✨</span>
+                <span class="festinha" style="top: -5px; left: 5px; animation-delay: 0s;">🎈</span>
+                <span class="festinha" style="bottom: -5px; right: 5px; animation-delay: 0.5s;">🎉</span>
+                <span class="festinha" style="top: -5px; right: 5px; animation-delay: 1s;">🎊</span>
+                <span class="festinha" style="bottom: -5px; left: 5px; animation-delay: 1.5s;">✨</span>
                 CONTRATO DE NAMORO RENOVADO!
             </div>
 
@@ -614,9 +617,9 @@
         }
 
         function desenharCenaFinal() {
-            // Moto e Casa param mais cedo para não se atropelarem
-            if(jogador.x < canvas.width * 0.25) jogador.x += 1;
-            if(posXPortao > canvas.width * 0.5) posXPortao -= 3;
+            // AJUSTE PARA NÃO SE ATROPELAREM: A moto para aos 10% da tela e a casa aos 75%
+            if(jogador.x < canvas.width * 0.10) jogador.x += 1;
+            if(posXPortao > canvas.width * 0.75) posXPortao -= 3;
             else if (!transicaoIniciada) {
                 transicaoIniciada = true;
                 musicaJogo.pause();
@@ -644,20 +647,20 @@
                 ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // Casa redesenhada com proporções móveis
+            // Casa redesenhada com proporções móveis menores
             if (imgCasa.complete && imgCasa.naturalWidth !== 0) {
                 let proporcaoCasa = imgCasa.naturalWidth / imgCasa.naturalHeight;
-                let casaAltura = Math.min(350, canvas.height * 0.6); 
+                let casaAltura = Math.min(300, canvas.height * 0.5); 
                 let casaLargura = casaAltura * proporcaoCasa; 
                 ctx.drawImage(imgCasa, posXPortao - (casaLargura / 2), chaoY - casaAltura + 10, casaLargura, casaAltura);
             } else {
                 ctx.fillStyle = "#fff"; ctx.font = "30px VT323"; ctx.fillText("CASA", posXPortao, chaoY - 50);
             }
 
-            // Moto redesenhada com proporções móveis
+            // Moto redesenhada com proporções móveis menores
             if (imgMoto.complete && imgMoto.naturalWidth !== 0) {
                 let proporcaoMoto = imgMoto.naturalWidth / imgMoto.naturalHeight;
-                let motoAlturaFinal = Math.min(225, canvas.height * 0.4);
+                let motoAlturaFinal = Math.min(180, canvas.height * 0.35);
                 let motoLarguraFinal = motoAlturaFinal * proporcaoMoto;
                 ctx.drawImage(imgMoto, jogador.x, chaoY - motoAlturaFinal, motoLarguraFinal, motoAlturaFinal);
             } else {
@@ -696,5 +699,3 @@
     </script>
 </body>
 </html>
-
-
