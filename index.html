@@ -413,10 +413,10 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-            // Recalcula a altura do chão proporcionalmente ao ecrã atual do telemóvel
-            chaoY = canvas.height * 0.82; 
+            // A tua imagem de fundo tem a estrada perto do limite inferior.
+            // Posicionamos a linha de colisão (chão) a 92% da tela.
+            chaoY = canvas.height * 0.92; 
             
-            // Reposiciona o jogador e atualiza o tamanho dele se necessário
             if (jogoAtivo) {
                 jogador.y = chaoY - jogador.altura;
             }
@@ -472,7 +472,7 @@
 
         const jogador = {
             x: 50, y: 0, largura: 110, altura: 80,
-            gravity: 0.55, jumpForce: -13.5, velocidadeY: 0, estaNoChao: true
+            gravity: 0.6, jumpForce: -14, velocidadeY: 0, estaNoChao: true
         };
 
         let obstaculos = [];
@@ -488,7 +488,7 @@
             document.getElementById('tela-chat').style.display = 'none';
             document.getElementById('hud').style.display = 'flex';
             
-            redimensionarCanvas(); // Garante o chão correto antes de iniciar
+            redimensionarCanvas(); 
             jogador.y = chaoY - jogador.altura;
             
             jogoAtivo = true; cenaFinalAtiva = false;
@@ -528,7 +528,7 @@
             if (!cenaFinalAtiva) {
                 contadorFrames++;
                 if (contadorFrames === Math.floor(framesParaProximoObstaculo / 2)) {
-                    coracoes.push({ x: canvas.width + 50, y: chaoY - 80 - (Math.random() * 30) });
+                    coracoes.push({ x: canvas.width + 50, y: chaoY - 90 - (Math.random() * 40) });
                 }
                 if (contadorFrames >= framesParaProximoObstaculo) {
                     obstaculos.push({ x: canvas.width + 50, y: chaoY - 45, tipo: "BARREIRA" });
@@ -541,23 +541,17 @@
             let larguraFundo = canvas.width;
             let fundoScroll = (scrollX * velocidadeParallax) % (larguraFundo * 2);
             
+            // Desenha a imagem de fundo preenchendo a tela toda (canvas.height)
             if (imgFundo.complete && imgFundo.naturalWidth !== 0) {
-                ctx.drawImage(imgFundo, -fundoScroll, 0, larguraFundo, chaoY);
+                ctx.drawImage(imgFundo, -fundoScroll, 0, larguraFundo, canvas.height);
                 ctx.save();
                 ctx.translate(larguraFundo * 2 - fundoScroll, 0);
                 ctx.scale(-1, 1);
-                ctx.drawImage(imgFundo, 0, 0, larguraFundo, chaoY);
+                ctx.drawImage(imgFundo, 0, 0, larguraFundo, canvas.height);
                 ctx.restore();
-                ctx.drawImage(imgFundo, larguraFundo * 2 - fundoScroll, 0, larguraFundo, chaoY);
+                ctx.drawImage(imgFundo, larguraFundo * 2 - fundoScroll, 0, larguraFundo, canvas.height);
             } else {
-                ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, chaoY);
-            }
-
-            ctx.fillStyle = '#34495e'; ctx.fillRect(0, chaoY, canvas.width, canvas.height - chaoY);
-            ctx.fillStyle = '#f1c40f'; 
-            let moveFaixa = scrollX % 100;
-            for(let i = 0; i <= canvas.width + 100; i += 100) {
-                ctx.fillRect(i - moveFaixa, chaoY + 20, 50, 5);
+                ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
             if (!cenaFinalAtiva) scrollX += velocidadePista;
@@ -591,13 +585,15 @@
             for (let i = obstaculos.length - 1; i >= 0; i--) {
                 let obs = obstaculos[i];
                 obs.x -= velocidadePista;
+                
+                // Novo design da barricada (Caixa laranja com listras pretas feito em código)
                 ctx.fillStyle = "#e67e22";
                 ctx.fillRect(obs.x, obs.y, 40, 45);
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 16px VT323";
-                ctx.fillText("🚧", obs.x + 8, obs.y + 30);
+                ctx.fillStyle = "#111"; // Listras
+                ctx.fillRect(obs.x, obs.y + 10, 40, 8);
+                ctx.fillRect(obs.x, obs.y + 25, 40, 8);
 
-                if (verificarColisao(jogador, {x: obs.x, y: obs.y, largura: 40, altura: 45})) {
+                if (verificarColisao(jogador, {x: obs.x, y: obs.y, largura: 30, altura: 40})) {
                     obstaculos.splice(i, 1);
                     tempoRestante = Math.max(0, tempoRestante - 1);
                     document.getElementById('tempo').innerText = tempoRestante;
@@ -638,18 +634,16 @@
             let fundoScroll = (scrollX * velocidadeParallax) % (larguraFundo * 2);
             
             if (imgFundo.complete && imgFundo.naturalWidth !== 0) {
-                ctx.drawImage(imgFundo, -fundoScroll, 0, larguraFundo, chaoY);
+                ctx.drawImage(imgFundo, -fundoScroll, 0, larguraFundo, canvas.height);
                 ctx.save();
                 ctx.translate(larguraFundo * 2 - fundoScroll, 0);
                 ctx.scale(-1, 1);
-                ctx.drawImage(imgFundo, 0, 0, larguraFundo, chaoY);
+                ctx.drawImage(imgFundo, 0, 0, larguraFundo, canvas.height);
                 ctx.restore();
-                ctx.drawImage(imgFundo, larguraFundo * 2 - fundoScroll, 0, larguraFundo, chaoY);
+                ctx.drawImage(imgFundo, larguraFundo * 2 - fundoScroll, 0, larguraFundo, canvas.height);
             } else {
-                ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, chaoY);
+                ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
-            
-            ctx.fillStyle = '#34495e'; ctx.fillRect(0, chaoY, canvas.width, canvas.height - chaoY);
 
             if (imgCasa.complete && imgCasa.naturalWidth !== 0) {
                 let proporcaoCasa = imgCasa.naturalWidth / imgCasa.naturalHeight;
@@ -696,7 +690,6 @@
             redimensionarCanvas();
         }
         
-        // Inicia calculando o chão logo na primeira tela para evitar bugs visuais
         redimensionarCanvas();
     </script>
 </body>
