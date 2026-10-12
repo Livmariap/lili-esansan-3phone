@@ -314,7 +314,7 @@
 
     <div id="jogo-container">
         <div id="hud" style="display: none;">
-            <div class="contador">TEMPO: <span id="tempo">120</span>s</div>
+            <div class="contador">TEMPO: <span id="tempo">75</span>s</div>
             <div class="contador font-red">CORAÇÕES: <span id="coracoes">0</span>/25</div>
         </div>
 
@@ -331,7 +331,7 @@
             <p>📱 Toque na tela para pular!</p>
             <p>❤️ Colete os 25 corações pelo caminho.</p>
             <p>🚧 Pule os obstáculos para não perder tempo.</p>
-            <p>⏱️ Chegue na Quadra 203 antes dos 120 segundos!</p>
+            <p>⏱️ Chegue na Quadra 203 antes dos 75 segundos!</p>
             <button class="btn" onclick="irParaChat()">AVANÇAR ></button>
         </div>
 
@@ -415,17 +415,11 @@
         function redimensionarCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
             chaoY = canvas.height * 0.92; 
-            
-            if (jogoAtivo) {
-                jogador.y = chaoY - jogador.altura;
-            }
+            if (jogoAtivo) jogador.y = chaoY - jogador.altura;
         }
         
-        window.addEventListener('resize', () => {
-            setTimeout(redimensionarCanvas, 100);
-        });
+        window.addEventListener('resize', () => { setTimeout(redimensionarCanvas, 100); });
         
         function iniciarAudioEMenu() {
             tocarClique();
@@ -454,7 +448,7 @@
         }
 
         let jogoAtivo = false;
-        let tempoRestante = 120;
+        let tempoRestante = 75; // TEMPO CORRIGIDO E BALANCEADO
         let coracoesColetados = 0;
         let temporizador;
         let cenaFinalAtiva = false;
@@ -496,9 +490,11 @@
             jogador.y = chaoY - jogador.altura;
             
             jogoAtivo = true; cenaFinalAtiva = false;
-            tempoRestante = 120; 
+            tempoRestante = 75; // TEMPO CORRIGIDO E BALANCEADO
             coracoesColetados = 0; scrollX = 0;
-            obstaculos = []; coracoes = []; contadorFrames = 0; framesParaProximoObstaculo = 60; 
+            obstaculos = []; coracoes = []; contadorFrames = 0; 
+            framesParaProximoObstaculo = Math.floor(Math.random() * 60) + 80; 
+            
             document.getElementById('tempo').innerText = tempoRestante;
             document.getElementById('coracoes').innerText = coracoesColetados;
 
@@ -525,7 +521,6 @@
             }
         });
 
-        // FUNÇÃO ADICIONADA: Inicia a cena final quando apanha os corações
         function iniciarCenaFinal() {
             cenaFinalAtiva = true;
             document.getElementById('hud').style.display = 'none';
@@ -537,13 +532,15 @@
 
             if (!cenaFinalAtiva) {
                 contadorFrames++;
+                // Corações surgem a meio do caminho do obstáculo
                 if (contadorFrames === Math.floor(framesParaProximoObstaculo / 2)) {
                     coracoes.push({ x: canvas.width + 50, y: chaoY - 90 - (Math.random() * 40) });
                 }
+                
+                // Ritmo de obstáculos mais adequado para a fluidez do jogo
                 if (contadorFrames >= framesParaProximoObstaculo) {
-                    // Obstáculo desenhado maior (70x70 em vez de 40x45)
-                    obstaculos.push({ x: canvas.width + 50, y: chaoY - 70, largura: 70, altura: 70 });
-                    framesParaProximoObstaculo = Math.floor(Math.random() * 80) + 90;
+                    obstaculos.push({ x: canvas.width + 50, y: chaoY - 60, largura: 60, altura: 60 });
+                    framesParaProximoObstaculo = Math.floor(Math.random() * 60) + 80; 
                     contadorFrames = 0;
                 }
             }
@@ -585,10 +582,14 @@
                 ctx.fillStyle = "#ff4757";
                 ctx.font = "30px Arial";
                 ctx.fillText("❤️", coracao.x, coracao.y + 30);
-                if (verificarColisao(jogador, {x: coracao.x, y: coracao.y, largura: 30, altura: 30})) {
+                
+                // Hitbox do coração
+                let hitboxCoracao = {x: coracao.x, y: coracao.y, largura: 30, altura: 30};
+                let hitboxMotoColeta = {x: jogador.x, y: jogador.y, largura: jogador.largura, altura: jogador.altura};
+
+                if (verificarColisao(hitboxMotoColeta, hitboxCoracao)) {
                     coracoes.splice(i, 1); coracoesColetados++;
                     document.getElementById('coracoes').innerText = coracoesColetados;
-                    // Verifica se já apanhou todos os 25 corações e chama a função nova
                     if (coracoesColetados >= 25) iniciarCenaFinal();
                 }
             }
@@ -604,8 +605,11 @@
                     ctx.fillRect(obs.x, obs.y, obs.largura, obs.altura);
                 }
 
-                // Ajuste de Hitbox mais justo (um pouco mais pequeno que a imagem para não ser frustrante)
-                if (verificarColisao(jogador, {x: obs.x + 10, y: obs.y + 10, largura: obs.largura - 20, altura: obs.altura - 10})) {
+                // O SEGREDO DO SALTO PERFEITO: Hitboxes ajustados para ignorar pontas em branco da imagem
+                let hitboxMoto = { x: jogador.x + 20, y: jogador.y + 20, largura: jogador.largura - 30, altura: jogador.altura - 20 };
+                let hitboxObs = { x: obs.x + 15, y: obs.y + 20, largura: obs.largura - 30, altura: obs.altura - 20 };
+
+                if (verificarColisao(hitboxMoto, hitboxObs)) {
                     obstaculos.splice(i, 1);
                     tempoRestante = Math.max(0, tempoRestante - 1);
                     document.getElementById('tempo').innerText = tempoRestante;
