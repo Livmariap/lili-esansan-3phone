@@ -525,6 +525,12 @@
             }
         });
 
+        // FUNÇÃO ADICIONADA: Inicia a cena final quando apanha os corações
+        function iniciarCenaFinal() {
+            cenaFinalAtiva = true;
+            document.getElementById('hud').style.display = 'none';
+        }
+
         function animar() {
             if (!jogoAtivo) return;
             requestAnimationFrame(animar);
@@ -535,7 +541,8 @@
                     coracoes.push({ x: canvas.width + 50, y: chaoY - 90 - (Math.random() * 40) });
                 }
                 if (contadorFrames >= framesParaProximoObstaculo) {
-                    obstaculos.push({ x: canvas.width + 50, y: chaoY - 45, tipo: "BARREIRA" });
+                    // Obstáculo desenhado maior (70x70 em vez de 40x45)
+                    obstaculos.push({ x: canvas.width + 50, y: chaoY - 70, largura: 70, altura: 70 });
                     framesParaProximoObstaculo = Math.floor(Math.random() * 80) + 90;
                     contadorFrames = 0;
                 }
@@ -581,6 +588,7 @@
                 if (verificarColisao(jogador, {x: coracao.x, y: coracao.y, largura: 30, altura: 30})) {
                     coracoes.splice(i, 1); coracoesColetados++;
                     document.getElementById('coracoes').innerText = coracoesColetados;
+                    // Verifica se já apanhou todos os 25 corações e chama a função nova
                     if (coracoesColetados >= 25) iniciarCenaFinal();
                 }
             }
@@ -590,16 +598,14 @@
                 obs.x -= velocidadePista;
                 
                 if (imgObstaculo.complete && imgObstaculo.naturalWidth !== 0) {
-                    ctx.drawImage(imgObstaculo, obs.x, obs.y, 45, 45); 
+                    ctx.drawImage(imgObstaculo, obs.x, obs.y, obs.largura, obs.altura); 
                 } else {
                     ctx.fillStyle = "#e67e22";
-                    ctx.fillRect(obs.x, obs.y, 40, 45);
-                    ctx.fillStyle = "#111";
-                    ctx.fillRect(obs.x, obs.y + 10, 40, 8);
-                    ctx.fillRect(obs.x, obs.y + 25, 40, 8);
+                    ctx.fillRect(obs.x, obs.y, obs.largura, obs.altura);
                 }
 
-                if (verificarColisao(jogador, {x: obs.x, y: obs.y, largura: 30, altura: 40})) {
+                // Ajuste de Hitbox mais justo (um pouco mais pequeno que a imagem para não ser frustrante)
+                if (verificarColisao(jogador, {x: obs.x + 10, y: obs.y + 10, largura: obs.largura - 20, altura: obs.altura - 10})) {
                     obstaculos.splice(i, 1);
                     tempoRestante = Math.max(0, tempoRestante - 1);
                     document.getElementById('tempo').innerText = tempoRestante;
