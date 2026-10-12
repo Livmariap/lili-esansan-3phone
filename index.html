@@ -229,7 +229,6 @@
             image-rendering: pixelated; 
         }
 
-        /* AJUSTE PARA NÃO CORTAR AS LATERAIS NO FINAL */
         .cartao-recompensa {
             background: linear-gradient(135deg, #ffd700, #ff8c00);
             color: #2c3e50;
@@ -456,7 +455,7 @@
         }
 
         let jogoAtivo = false;
-        let tempoRestante = 90;
+        let tempoRestante = 90; // Tempo inicial de 90 segundos
         let coracoesColetados = 0;
         let temporizador;
         let cenaFinalAtiva = false;
@@ -495,7 +494,7 @@
             jogador.y = chaoY - jogador.altura;
             
             jogoAtivo = true; cenaFinalAtiva = false;
-            tempoRestante = 90; 
+            tempoRestante = 90; // Reset do tempo para 90 segundos
             coracoesColetados = 0; scrollX = 0;
             obstaculos = []; coracoes = []; contadorFrames = 0; framesParaProximoObstaculo = 60; 
             document.getElementById('tempo').innerText = tempoRestante;
@@ -596,7 +595,7 @@
 
                 if (verificarColisao(jogador, {x: obs.x, y: obs.y, largura: 30, altura: 40})) {
                     obstaculos.splice(i, 1);
-                    tempoRestante = Math.max(0, tempoRestante - 1);
+                    tempoRestante = Math.max(0, tempoRestante - 3); // Penalidade de 3 segundos
                     document.getElementById('tempo').innerText = tempoRestante;
                     ctx.fillStyle = 'rgba(255, 0, 0, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
                 }
@@ -617,7 +616,6 @@
         }
 
         function desenharCenaFinal() {
-            // AJUSTE PARA NÃO SE ATROPELAREM: A moto para aos 10% da tela e a casa aos 75%
             if(jogador.x < canvas.width * 0.10) jogador.x += 1;
             if(posXPortao > canvas.width * 0.75) posXPortao -= 3;
             else if (!transicaoIniciada) {
@@ -647,7 +645,6 @@
                 ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // Casa redesenhada com proporções móveis menores
             if (imgCasa.complete && imgCasa.naturalWidth !== 0) {
                 let proporcaoCasa = imgCasa.naturalWidth / imgCasa.naturalHeight;
                 let casaAltura = Math.min(300, canvas.height * 0.5); 
@@ -657,7 +654,6 @@
                 ctx.fillStyle = "#fff"; ctx.font = "30px VT323"; ctx.fillText("CASA", posXPortao, chaoY - 50);
             }
 
-            // Moto redesenhada com proporções móveis menores
             if (imgMoto.complete && imgMoto.naturalWidth !== 0) {
                 let proporcaoMoto = imgMoto.naturalWidth / imgMoto.naturalHeight;
                 let motoAlturaFinal = Math.min(180, canvas.height * 0.35);
@@ -699,5 +695,3 @@
     </script>
 </body>
 </html>
-
-
