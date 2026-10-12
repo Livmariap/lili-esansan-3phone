@@ -314,8 +314,8 @@
 
     <div id="jogo-container">
         <div id="hud" style="display: none;">
-            <div class="contador">TEMPO: <span id="tempo">90</span>s</div>
-            <div class="contador font-red">CORACOES: <span id="coracoes">0</span>/14</div>
+            <div class="contador">TEMPO: <span id="tempo">120</span>s</div>
+            <div class="contador font-red">CORAÇÕES: <span id="coracoes">0</span>/25</div>
         </div>
 
         <div id="tela-pre-intro" class="tela" onclick="iniciarAudioEMenu()">
@@ -329,10 +329,10 @@
         <div id="tela-instrucoes" class="tela" style="display: none;">
             <h1>COMO JOGAR</h1>
             <p>📱 Toque na tela para pular!</p>
-            <p>❤️ Colete os 14 coracoes pelo caminho.</p>
-            <p>🚧 Pule as barricadas para nao perder tempo.</p>
-            <p>⏱️ Chegue na Quadra 203 antes dos 90 segundos!</p>
-            <button class="btn" onclick="irParaChat()">AVANCAR ></button>
+            <p>❤️ Colete os 25 corações pelo caminho.</p>
+            <p>🚧 Pule os obstáculos para não perder tempo.</p>
+            <p>⏱️ Chegue na Quadra 203 antes dos 120 segundos!</p>
+            <button class="btn" onclick="irParaChat()">AVANÇAR ></button>
         </div>
 
         <div id="tela-chat" class="tela" style="display: none;">
@@ -350,7 +350,7 @@
                         <span class="msg-time">AGORA</span>
                     </div>
                     <div class="msg sansan" id="msg-sansan" style="display: none;">
-                        Estou indo Lili!
+                        Estou indo, Lili!
                         <span class="msg-time">AGORA</span>
                     </div>
                 </div>
@@ -361,7 +361,7 @@
 
         <div id="tela-derrota" class="tela" style="display: none;">
             <h1>ATRASOU!</h1>
-            <p>Putz! O tempo acabou. A Lili ficou à espera no portao!</p>
+            <p>Putz! O tempo acabou. A Lili ficou à espera no portão!</p>
             <button class="btn" onclick="reiniciarJogo()">TENTAR DE NOVO</button>
         </div>
 
@@ -381,7 +381,7 @@
 
             <div class="texto-final">
                 <strong>De: Lili ❤️</strong>
-                Feliz mais um ano de namoro Sansan, obrigado por ser meu play 2 em todas as minhas fases dificeis, espero zerar este jogo que eh a vida com voce.
+                Feliz mais um ano de namoro, Sansan! Obrigada por ser o meu play 2 em todas as minhas fases difíceis. Espero zerar este jogo que é a vida com você.
             </div>
         </div>
 
@@ -416,7 +416,6 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-            // Fixa o chão na estrada da tua imagem original
             chaoY = canvas.height * 0.92; 
             
             if (jogoAtivo) {
@@ -455,7 +454,7 @@
         }
 
         let jogoAtivo = false;
-        let tempoRestante = 90; // Tempo inicial de 90 segundos
+        let tempoRestante = 120;
         let coracoesColetados = 0;
         let temporizador;
         let cenaFinalAtiva = false;
@@ -471,6 +470,9 @@
 
         const imgCasa = new Image();
         imgCasa.src = 'casa.png'; 
+
+        const imgObstaculo = new Image();
+        imgObstaculo.src = 'obstaculo.png'; 
 
         const jogador = {
             x: 50, y: 0, largura: 110, altura: 80,
@@ -494,7 +496,7 @@
             jogador.y = chaoY - jogador.altura;
             
             jogoAtivo = true; cenaFinalAtiva = false;
-            tempoRestante = 90; // Reset do tempo para 90 segundos
+            tempoRestante = 120; 
             coracoesColetados = 0; scrollX = 0;
             obstaculos = []; coracoes = []; contadorFrames = 0; framesParaProximoObstaculo = 60; 
             document.getElementById('tempo').innerText = tempoRestante;
@@ -579,7 +581,7 @@
                 if (verificarColisao(jogador, {x: coracao.x, y: coracao.y, largura: 30, altura: 30})) {
                     coracoes.splice(i, 1); coracoesColetados++;
                     document.getElementById('coracoes').innerText = coracoesColetados;
-                    if (coracoesColetados >= 14) iniciarCenaFinal();
+                    if (coracoesColetados >= 25) iniciarCenaFinal();
                 }
             }
 
@@ -587,15 +589,19 @@
                 let obs = obstaculos[i];
                 obs.x -= velocidadePista;
                 
-                ctx.fillStyle = "#e67e22";
-                ctx.fillRect(obs.x, obs.y, 40, 45);
-                ctx.fillStyle = "#111";
-                ctx.fillRect(obs.x, obs.y + 10, 40, 8);
-                ctx.fillRect(obs.x, obs.y + 25, 40, 8);
+                if (imgObstaculo.complete && imgObstaculo.naturalWidth !== 0) {
+                    ctx.drawImage(imgObstaculo, obs.x, obs.y, 45, 45); 
+                } else {
+                    ctx.fillStyle = "#e67e22";
+                    ctx.fillRect(obs.x, obs.y, 40, 45);
+                    ctx.fillStyle = "#111";
+                    ctx.fillRect(obs.x, obs.y + 10, 40, 8);
+                    ctx.fillRect(obs.x, obs.y + 25, 40, 8);
+                }
 
                 if (verificarColisao(jogador, {x: obs.x, y: obs.y, largura: 30, altura: 40})) {
                     obstaculos.splice(i, 1);
-                    tempoRestante = Math.max(0, tempoRestante - 3); // Penalidade de 3 segundos
+                    tempoRestante = Math.max(0, tempoRestante - 1);
                     document.getElementById('tempo').innerText = tempoRestante;
                     ctx.fillStyle = 'rgba(255, 0, 0, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
                 }
@@ -610,15 +616,29 @@
         let posXPortao = canvas.width;
         let transicaoIniciada = false;
 
-        function iniciarCenaFinal() {
-            cenaFinalAtiva = true;
-            document.getElementById('hud').style.display = 'none';
-        }
-
         function desenharCenaFinal() {
-            if(jogador.x < canvas.width * 0.10) jogador.x += 1;
-            if(posXPortao > canvas.width * 0.75) posXPortao -= 3;
-            else if (!transicaoIniciada) {
+            let motoAlturaFinal = 0, motoLarguraFinal = 0;
+            if (imgMoto.complete && imgMoto.naturalWidth !== 0) {
+                let proporcaoMoto = imgMoto.naturalWidth / imgMoto.naturalHeight;
+                motoAlturaFinal = Math.min(180, canvas.height * 0.35);
+                motoLarguraFinal = motoAlturaFinal * proporcaoMoto;
+            }
+
+            let casaAltura = 0, casaLargura = 0;
+            if (imgCasa.complete && imgCasa.naturalWidth !== 0) {
+                let proporcaoCasa = imgCasa.naturalWidth / imgCasa.naturalHeight;
+                casaAltura = Math.min(300, canvas.height * 0.5); 
+                casaLargura = casaAltura * proporcaoCasa; 
+            }
+
+            let margemSeguranca = 30; 
+            let pontoParagemMoto = 20; 
+            let pontoParagemCasa = pontoParagemMoto + motoLarguraFinal + (casaLargura / 2) + margemSeguranca; 
+
+            if(jogador.x < pontoParagemMoto) jogador.x += 0.5; 
+            if(posXPortao > pontoParagemCasa) posXPortao -= 1.5; 
+            
+            if (jogador.x >= pontoParagemMoto && posXPortao <= pontoParagemCasa && !transicaoIniciada) {
                 transicaoIniciada = true;
                 musicaJogo.pause();
                 musicaFinal.play().catch(() => {});
@@ -626,7 +646,7 @@
                 setTimeout(() => { 
                     document.getElementById('tela-animacao-gif').style.display = 'flex'; 
                     jogoAtivo = false; 
-                }, 2000);
+                }, 6000);
             }
 
             let velocidadeParallax = 0.2; 
@@ -645,19 +665,13 @@
                 ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            if (imgCasa.complete && imgCasa.naturalWidth !== 0) {
-                let proporcaoCasa = imgCasa.naturalWidth / imgCasa.naturalHeight;
-                let casaAltura = Math.min(300, canvas.height * 0.5); 
-                let casaLargura = casaAltura * proporcaoCasa; 
+            if (casaLargura > 0) {
                 ctx.drawImage(imgCasa, posXPortao - (casaLargura / 2), chaoY - casaAltura + 10, casaLargura, casaAltura);
             } else {
                 ctx.fillStyle = "#fff"; ctx.font = "30px VT323"; ctx.fillText("CASA", posXPortao, chaoY - 50);
             }
 
-            if (imgMoto.complete && imgMoto.naturalWidth !== 0) {
-                let proporcaoMoto = imgMoto.naturalWidth / imgMoto.naturalHeight;
-                let motoAlturaFinal = Math.min(180, canvas.height * 0.35);
-                let motoLarguraFinal = motoAlturaFinal * proporcaoMoto;
+            if (motoLarguraFinal > 0) {
                 ctx.drawImage(imgMoto, jogador.x, chaoY - motoAlturaFinal, motoLarguraFinal, motoAlturaFinal);
             } else {
                 ctx.fillText("MOTO", jogador.x, chaoY - 5);
