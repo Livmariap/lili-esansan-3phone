@@ -73,28 +73,28 @@
             justify-content: center;
             z-index: 20;
             text-align: center;
-            padding: 20px;
+            padding: 15px;
         }
 
         .tela h1 {
-            font-size: 3rem;
+            font-size: 2.8rem;
             color: #ffd700;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             text-shadow: 3px 3px 0px #000;
         }
 
         .tela p {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            max-width: 90%;
-            line-height: 1.4;
+            font-size: 1.55rem;
+            margin-bottom: 8px;
+            max-width: 92%;
+            line-height: 1.3;
         }
 
         .btn {
             background-color: #2ed573;
             color: white;
             border: 3px solid #000;
-            padding: 12px 25px;
+            padding: 10px 25px;
             font-size: 1.8rem;
             font-weight: bold;
             cursor: pointer;
@@ -102,7 +102,7 @@
             transition: 0.1s;
             width: 80%;
             max-width: 300px;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .btn:active { transform: translateY(4px); box-shadow: none; }
@@ -226,7 +226,6 @@
         .msg-time { font-size: 1.1rem; color: #555; float: right; margin-top: 5px; margin-left: 10px; }
         .msg.sansan .msg-time { color: #fff; }
 
-        /* TELA DO GIF AJUSTADA PARA DAR MAIS ESPAÇO À IMAGEM */
         #tela-animacao-gif {
             background-color: rgba(15, 15, 15, 0.95);
             display: flex;
@@ -236,7 +235,6 @@
             padding: 5px;
         }
 
-        /* GIF BEM MAIOR (80% DA ALTURA) MAS SEM DISTORCER */
         .gif-beijo {
             height: 80vh; 
             width: auto;  
@@ -340,8 +338,8 @@
         </div>
 
         <div id="hud" style="display: none;">
-            <div class="contador">TEMPO: <span id="tempo">75</span>s</div>
-            <div class="contador font-red">CORAÇÕES: <span id="coracoes">0</span>/25</div>
+            <div class="contador">TEMPO: <span id="tempo">90</span>s</div>
+            <div class="contador font-red">CORAÇÕES: <span id="coracoes">0</span>/30</div>
         </div>
 
         <div id="tela-pre-intro" class="tela" onclick="iniciarAudioEMenu()" style="display: none;">
@@ -352,12 +350,14 @@
             <div class="texto-press-start">TOQUE PARA INICIAR</div>
         </div>
 
+        <!-- INSTRUÇÕES ATUALIZADAS COM AS NOVAS REGRAS -->
         <div id="tela-instrucoes" class="tela" style="display: none;">
             <h1>COMO JOGAR</h1>
             <p>📱 Toque na tela para pular!</p>
-            <p>❤️ Colete os 25 corações pelo caminho.</p>
-            <p>🚧 Pule os obstáculos para não perder tempo.</p>
-            <p>⏱️ Chegue na Quadra 203 antes dos 75 segundos!</p>
+            <p>❤️ Colete <strong>30 corações</strong> pelo caminho.</p>
+            <p>🚧 Cuidado: Bater tira <strong>5s</strong> e derruba <strong>1 coração</strong>!</p>
+            <p>⭐ Pegue as estrelas para ganhar <strong>+5 segundos</strong>!</p>
+            <p>⏱️ Chegue na Quadra 203 antes dos <strong>90 segundos</strong>!</p>
             <button class="btn" onclick="irParaChat()">AVANÇAR ></button>
         </div>
 
@@ -439,7 +439,7 @@
         const imgObstaculo = new Image();
         const imgIntro = new Image();
 
-        // SISTEMA DE CARREGAMENTO: Agora inclui o obstáculo e a casa desde o início!
+        // SISTEMA DE CARREGAMENTO COMPLETO DO JOGO (EXCETO O GIF FINAL)
         let jogoLiberado = false;
         function liberarJogo() {
             if (jogoLiberado) return;
@@ -447,7 +447,7 @@
             document.getElementById('tela-carregando').style.display = 'none';
             document.getElementById('tela-pre-intro').style.display = 'flex';
             
-            // Apenas o GIF pesado fica para carregar em segundo plano durante os menus
+            // O GIF final é carregado em segundo plano enquanto ele navega nos menus
             document.getElementById('gif-final-img').src = 'video beijo final.gif';
         }
 
@@ -459,15 +459,13 @@
             }
         }
 
-        // Carrega imediatamente todas as 5 imagens do jogo (incluindo o obstáculo)
         imgIntro.onload = checarEssenciais; imgIntro.onerror = checarEssenciais; imgIntro.src = 'intro.jpg';
         imgFundo.onload = checarEssenciais; imgFundo.onerror = checarEssenciais; imgFundo.src = 'fundo.jpg';
         imgMoto.onload = checarEssenciais; imgMoto.onerror = checarEssenciais; imgMoto.src = 'Sansan_moto.png';
         imgObstaculo.onload = checarEssenciais; imgObstaculo.onerror = checarEssenciais; imgObstaculo.src = 'obstaculo.png';
         imgCasa.onload = checarEssenciais; imgCasa.onerror = checarEssenciais; imgCasa.src = 'casa.png';
 
-        // Trava de segurança: abre em 3 segundos caso o telemóvel demore a responder
-        setTimeout(liberarJogo, 3000);
+        setTimeout(liberarJogo, 3500);
 
         function tocarClique() {
             somClique.currentTime = 0; 
@@ -526,14 +524,23 @@
         let ultimoTempo = 0;
         const intervaloFrame = 1000 / 60; 
 
+        const META_CORACOES = 30;
+        const TEMPO_INICIAL = 90;
+
         let jogoAtivo = false;
-        let tempoRestante = 75; 
+        let tempoRestante = TEMPO_INICIAL; 
         let coracoesColetados = 0;
         let temporizador;
         let cenaFinalAtiva = false;
         let scrollX = 0; 
         let contadorFrames = 0;
         let framesParaProximoObstaculo = 100;
+        let contadorEstrelas = 0;
+
+        // Variáveis do balão de pensamento e efeitos flutuantes
+        let balaoMostrado = false;
+        let tempoBalao = 0;
+        let efeitosTexto = [];
 
         const jogador = {
             x: 50, y: 0, largura: 110, altura: 80,
@@ -542,6 +549,7 @@
 
         let obstaculos = [];
         let coracoes = [];
+        let estrelas = [];
         let velocidadePista = 4;
 
         function iniciarJogo() {
@@ -563,11 +571,20 @@
             document.getElementById('tela-chat').style.display = 'none';
             document.getElementById('hud').style.display = 'flex';
             
-            jogoAtivo = true; cenaFinalAtiva = false;
-            tempoRestante = 75; 
-            coracoesColetados = 0; scrollX = 0;
+            jogoAtivo = true; 
+            cenaFinalAtiva = false;
+            tempoRestante = TEMPO_INICIAL; 
+            coracoesColetados = 0; 
+            scrollX = 0;
             velocidadePista = 4; 
-            obstaculos = []; coracoes = []; contadorFrames = 0; 
+            obstaculos = []; 
+            coracoes = []; 
+            estrelas = [];
+            efeitosTexto = [];
+            contadorFrames = 0; 
+            contadorEstrelas = 0;
+            balaoMostrado = false;
+            tempoBalao = 0;
             framesParaProximoObstaculo = Math.floor(Math.random() * 60) + 80; 
             
             document.getElementById('tempo').innerText = tempoRestante;
@@ -575,6 +592,7 @@
 
             ultimoTempo = performance.now(); 
             
+            clearInterval(temporizador);
             temporizador = setInterval(() => {
                 if(jogoAtivo && !cenaFinalAtiva) {
                     tempoRestante--;
@@ -601,7 +619,45 @@
 
         function iniciarCenaFinal() {
             cenaFinalAtiva = true;
+            posXPortao = canvas.width;
+            transicaoIniciada = false;
             document.getElementById('hud').style.display = 'none';
+        }
+
+        function desenharBalaoPensamento() {
+            let texto = "Os cachorros já devem estar pulando!";
+            ctx.font = "22px VT323";
+            let larguraTexto = ctx.measureText(texto).width;
+            let larguraCaixa = larguraTexto + 24;
+            let alturaCaixa = 38;
+            
+            let bx = Math.max(10, jogador.x);
+            if (bx + larguraCaixa > canvas.width - 10) {
+                bx = canvas.width - larguraCaixa - 10;
+            }
+            let by = Math.max(55, jogador.y - 52);
+
+            // Caixa do balão
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(bx, by, larguraCaixa, alturaCaixa);
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(bx, by, larguraCaixa, alturaCaixa);
+
+            // Pontinha do balão apontando para o Sansan
+            ctx.beginPath();
+            ctx.moveTo(jogador.x + 45, by + alturaCaixa);
+            ctx.lineTo(jogador.x + 60, by + alturaCaixa);
+            ctx.lineTo(jogador.x + 50, by + alturaCaixa + 10);
+            ctx.closePath();
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.stroke();
+
+            // Texto do balão
+            ctx.fillStyle = "#000000";
+            ctx.textAlign = "left";
+            ctx.fillText(texto, bx + 12, by + 26);
         }
 
         function animar(tempoAtual) {
@@ -613,18 +669,31 @@
             if (delta < intervaloFrame) return; 
             ultimoTempo = tempoAtual - (delta % intervaloFrame);
 
-            velocidadePista = 4 + (coracoesColetados * 0.12);
+            // Aceleração progressiva calibrada para 30 corações
+            velocidadePista = 4 + (coracoesColetados * 0.11);
 
             if (!cenaFinalAtiva) {
                 contadorFrames++;
+                contadorEstrelas++;
+
+                // Geração de Corações
                 if (contadorFrames === Math.floor(framesParaProximoObstaculo / 2)) {
-                    coracoes.push({ x: canvas.width + 50, y: chaoY - 90 - (Math.random() * 40) });
+                    coracoes.push({ x: canvas.width + 50, y: chaoY - 90 - (Math.random() * 45) });
                 }
                 
+                // Geração de Obstáculos
                 if (contadorFrames >= framesParaProximoObstaculo) {
                     obstaculos.push({ x: canvas.width + 50, y: chaoY - 60, largura: 60, altura: 60 });
-                    framesParaProximoObstaculo = Math.floor(Math.random() * 50) + 70 - coracoesColetados; 
+                    framesParaProximoObstaculo = Math.max(48, Math.floor(Math.random() * 45) + 75 - Math.floor(coracoesColetados * 0.8)); 
                     contadorFrames = 0;
+                }
+
+                // Geração de Estrelas (+5s) a cada ~7 segundos
+                if (contadorEstrelas >= 420) {
+                    if ( contadorFrames > 15 && contadorFrames < framesParaProximoObstaculo - 15 ) {
+                        estrelas.push({ x: canvas.width + 50, y: chaoY - 125 - (Math.random() * 35) });
+                        contadorEstrelas = 0;
+                    }
                 }
             }
 
@@ -659,6 +728,13 @@
                 ctx.fillStyle = "#fff"; ctx.font = "20px VT323"; ctx.fillText("MOTO", jogador.x, jogador.y + 50);
             }
 
+            // Desenha o balão de pensamento se estiver ativo (aparece 1 vez no meio do jogo)
+            if (tempoBalao > 0) {
+                desenharBalaoPensamento();
+                tempoBalao--;
+            }
+
+            // Coleta de Corações
             for (let i = coracoes.length - 1; i >= 0; i--) {
                 let coracao = coracoes[i];
                 coracao.x -= velocidadePista;
@@ -670,12 +746,43 @@
                 let hitboxMotoColeta = {x: jogador.x, y: jogador.y, largura: jogador.largura, altura: jogador.altura};
 
                 if (verificarColisao(hitboxMotoColeta, hitboxCoracao)) {
-                    coracoes.splice(i, 1); coracoesColetados++;
+                    coracoes.splice(i, 1); 
+                    coracoesColetados++;
                     document.getElementById('coracoes').innerText = coracoesColetados;
-                    if (coracoesColetados >= 25) iniciarCenaFinal();
+                    
+                    // Dispara o pensamento exatamente na metade (15 corações), apenas uma vez
+                    if (coracoesColetados === 15 && !balaoMostrado) {
+                        balaoMostrado = true;
+                        tempoBalao = 210; // Dura 3,5 segundos (210 frames a 60fps)
+                    }
+
+                    if (coracoesColetados >= META_CORACOES) iniciarCenaFinal();
+                } else if (coracao.x < -50) {
+                    coracoes.splice(i, 1);
                 }
             }
 
+            // Coleta de Estrelas (+5 Segundos)
+            for (let i = estrelas.length - 1; i >= 0; i--) {
+                let est = estrelas[i];
+                est.x -= (velocidadePista * 1.05);
+                ctx.font = "30px Arial";
+                ctx.fillText("⭐", est.x, est.y + 30);
+
+                let hitboxEstrela = {x: est.x, y: est.y, largura: 30, altura: 30};
+                let hitboxMotoColeta = {x: jogador.x, y: jogador.y, largura: jogador.largura, altura: jogador.altura};
+
+                if (verificarColisao(hitboxMotoColeta, hitboxEstrela)) {
+                    estrelas.splice(i, 1);
+                    tempoRestante += 5;
+                    document.getElementById('tempo').innerText = tempoRestante;
+                    efeitosTexto.push({ x: jogador.x + 30, y: jogador.y, texto: "+5s ⭐", cor: "#ffd700", vida: 45 });
+                } else if (est.x < -50) {
+                    estrelas.splice(i, 1);
+                }
+            }
+
+            // Obstáculos e Penalidade (-5s e -1 Coração)
             for (let i = obstaculos.length - 1; i >= 0; i--) {
                 let obs = obstaculos[i];
                 obs.x -= velocidadePista;
@@ -692,12 +799,41 @@
 
                 if (verificarColisao(hitboxMoto, hitboxObs)) {
                     obstaculos.splice(i, 1);
-                    tempoRestante = Math.max(0, tempoRestante - 1);
-                    document.getElementById('tempo').innerText = tempoRestante;
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
                     
-                    if (navigator.vibrate) { navigator.vibrate(200); }
+                    // Perde 5 segundos e cai 1 coração
+                    tempoRestante = Math.max(0, tempoRestante - 5);
+                    coracoesColetados = Math.max(0, coracoesColetados - 1);
+                    
+                    document.getElementById('tempo').innerText = tempoRestante;
+                    document.getElementById('coracoes').innerText = coracoesColetados;
+                    
+                    efeitosTexto.push({ x: jogador.x + 20, y: jogador.y, texto: "-5s | -1 ❤️", cor: "#ff4757", vida: 50 });
+                    
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.4)'; 
+                    ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                    
+                    if (navigator.vibrate) { navigator.vibrate(250); }
+                    
+                    if (tempoRestante <= 0) {
+                        finalizarJogo(false);
+                        return;
+                    }
+                } else if (obs.x < -100) {
+                    obstaculos.splice(i, 1);
                 }
+            }
+
+            // Desenha os textos flutuantes de feedback (+5s / -5s e -1 coração)
+            for (let i = efeitosTexto.length - 1; i >= 0; i--) {
+                let ef = efeitosTexto[i];
+                ctx.font = "28px VT323";
+                ctx.fillStyle = "#000";
+                ctx.fillText(ef.texto, ef.x + 2, ef.y + 2);
+                ctx.fillStyle = ef.cor;
+                ctx.fillText(ef.texto, ef.x, ef.y);
+                ef.y -= 1.2;
+                ef.vida--;
+                if (ef.vida <= 0) efeitosTexto.splice(i, 1);
             }
         }
 
@@ -709,6 +845,7 @@
         let posXPortao = canvas.width;
         let transicaoIniciada = false;
 
+        // ANIMAÇÃO DA MOTO CHEGANDO E PARANDO DO LADO DA CASA
         function desenharCenaFinal() {
             let motoAlturaFinal = 0, motoLarguraFinal = 0;
             if (imgMoto.complete && imgMoto.naturalWidth !== 0) {
