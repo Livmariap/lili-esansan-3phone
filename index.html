@@ -20,7 +20,7 @@
             height: 100%;
             height: 100dvh;
             overflow: hidden;
-            background-color: #2c3e50;
+            background-color: #111; /* Alterado para preto para transições suaves */
             color: white;
             display: flex;
             align-items: center;
@@ -35,7 +35,7 @@
             width: 100dvw;
             height: 100vh;
             height: 100dvh;
-            background-color: #ff7e5f;
+            background-color: #111; /* Cor de fundo neutra para evitar o piscar laranja */
             overflow: hidden;
         }
 
@@ -118,7 +118,6 @@
             50% { opacity: 0; }
         }
 
-        /* ECRÃ DE CARREGAMENTO */
         #tela-carregando {
             background-color: #111;
             z-index: 100;
@@ -126,10 +125,11 @@
 
         .texto-carregando {
             color: #ffd700;
-            font-size: 3.5rem;
+            font-size: 2.8rem; /* Tamanho ajustado para caber no ecrã sem quebrar */
             text-shadow: 4px 4px 0 #000;
             animation: piscar 1s infinite;
             margin-bottom: 10px;
+            text-align: center;
         }
 
         #tela-pre-intro {
@@ -333,10 +333,8 @@
 
     <div id="jogo-container">
         
-        <!-- TELA DE CARREGAMENTO ADICIONADA AQUI -->
         <div id="tela-carregando" class="tela">
-            <div class="texto-carregando">CARREGANDO...</div>
-            <p style="color: #ccc; font-size: 1.5rem;">A preparar a mota do Sansan!</p>
+            <div class="texto-carregando">PREPARANDO O PRESENTE!</div>
         </div>
 
         <div id="hud" style="display: none;">
@@ -438,7 +436,6 @@
         const imgCasa = new Image();
         const imgObstaculo = new Image();
 
-        // SISTEMA DE PRELOADER: Aguarda todas as imagens pesadas carregarem antes de mostrar o menu
         window.onload = function() {
             let imagensCarregadas = 0;
             const totalImagens = 6; 
@@ -539,11 +536,21 @@
             musicaMenu.currentTime = 0;
             musicaJogo.play().catch(() => {});
 
-            document.getElementById('tela-chat').style.display = 'none';
-            document.getElementById('hud').style.display = 'flex';
-            
             redimensionarCanvas(); 
             jogador.y = chaoY - jogador.altura;
+
+            // PRÉ-DESENHA O FUNDO E A MOTA ANTES DE ESCONDER O CHAT PARA EVITAR O PISCAR LARANJA
+            if (imgFundo.complete && imgFundo.naturalWidth !== 0) {
+                ctx.drawImage(imgFundo, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = "#ff7e5f"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            if (imgMoto.complete && imgMoto.naturalWidth !== 0) {
+                ctx.drawImage(imgMoto, jogador.x, jogador.y, jogador.largura + 20, jogador.altura);
+            }
+
+            document.getElementById('tela-chat').style.display = 'none';
+            document.getElementById('hud').style.display = 'flex';
             
             jogoAtivo = true; cenaFinalAtiva = false;
             tempoRestante = 75; 
