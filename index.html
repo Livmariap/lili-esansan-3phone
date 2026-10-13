@@ -226,24 +226,26 @@
         .msg-time { font-size: 1.1rem; color: #555; float: right; margin-top: 5px; margin-left: 10px; }
         .msg.sansan .msg-time { color: #fff; }
 
+        /* TELA DO GIF AJUSTADA PARA DAR MAIS ESPAÇO À IMAGEM */
         #tela-animacao-gif {
             background-color: rgba(15, 15, 15, 0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 5px;
         }
 
+        /* GIF BEM MAIOR (80% DA ALTURA) MAS SEM DISTORCER */
         .gif-beijo {
-            max-width: 95vw;
-            max-height: 70vh; 
-            width: auto;
-            height: auto;
+            height: 80vh; 
+            width: auto;  
+            max-width: 96vw; 
             object-fit: contain; 
             border-radius: 10px;
             border: 4px solid #fff;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            margin-bottom: 20px;
+            margin-bottom: 8px;
             image-rendering: pixelated; 
         }
 
@@ -390,9 +392,8 @@
         </div>
 
         <div id="tela-animacao-gif" class="tela" style="display: none;">
-            <!-- O GIF agora só carrega quando for chamado para não travar o início -->
             <img id="gif-final-img" src="" class="gif-beijo" alt="Beijo Final">
-            <button class="btn" id="btn-recompensa" onclick="mostrarRecompensaFinal()" style="background-color: #ff4757; padding: 12px 30px; font-size: 1.6rem;">RESGATAR RECOMPENSA</button>
+            <button class="btn" id="btn-recompensa" onclick="mostrarRecompensaFinal()" style="background-color: #ff4757; padding: 6px 25px; font-size: 1.4rem; margin-top: 2px;">RESGATAR RECOMPENSA</button>
         </div>
 
         <div id="tela-recompensa-final" class="tela" style="display: none;">
@@ -438,7 +439,7 @@
         const imgObstaculo = new Image();
         const imgIntro = new Image();
 
-        // SISTEMA DE CARREGAMENTO RÁPIDO (Carrega apenas o essencial para abrir logo)
+        // SISTEMA DE CARREGAMENTO: Agora inclui o obstáculo e a casa desde o início!
         let jogoLiberado = false;
         function liberarJogo() {
             if (jogoLiberado) return;
@@ -446,27 +447,27 @@
             document.getElementById('tela-carregando').style.display = 'none';
             document.getElementById('tela-pre-intro').style.display = 'flex';
             
-            // Carrega o resto em segundo plano enquanto o jogador está nos menus
-            imgCasa.src = 'casa.png';
-            imgObstaculo.src = 'obstaculo.png';
+            // Apenas o GIF pesado fica para carregar em segundo plano durante os menus
             document.getElementById('gif-final-img').src = 'video beijo final.gif';
         }
 
         let essenciaisCarregados = 0;
         function checarEssenciais() {
             essenciaisCarregados++;
-            if (essenciaisCarregados >= 3) {
+            if (essenciaisCarregados >= 5) {
                 liberarJogo();
             }
         }
 
-        // Inicia o carregamento imediatamente sem esperar por áudios ou fontes externas
+        // Carrega imediatamente todas as 5 imagens do jogo (incluindo o obstáculo)
         imgIntro.onload = checarEssenciais; imgIntro.onerror = checarEssenciais; imgIntro.src = 'intro.jpg';
         imgFundo.onload = checarEssenciais; imgFundo.onerror = checarEssenciais; imgFundo.src = 'fundo.jpg';
         imgMoto.onload = checarEssenciais; imgMoto.onerror = checarEssenciais; imgMoto.src = 'Sansan_moto.png';
+        imgObstaculo.onload = checarEssenciais; imgObstaculo.onerror = checarEssenciais; imgObstaculo.src = 'obstaculo.png';
+        imgCasa.onload = checarEssenciais; imgCasa.onerror = checarEssenciais; imgCasa.src = 'casa.png';
 
-        // Trava de segurança: se demorar mais de 2.5 segundos, abre o jogo de qualquer jeito
-        setTimeout(liberarJogo, 2500);
+        // Trava de segurança: abre em 3 segundos caso o telemóvel demore a responder
+        setTimeout(liberarJogo, 3000);
 
         function tocarClique() {
             somClique.currentTime = 0; 
@@ -502,7 +503,6 @@
             document.getElementById('tela-instrucoes').style.display = 'none';
             document.getElementById('tela-chat').style.display = 'flex';
             
-            // Garante que o fundo já fique desenhado atrás do chat para não piscar nada
             redimensionarCanvas();
             if (imgFundo.complete && imgFundo.naturalWidth !== 0) {
                 ctx.drawImage(imgFundo, 0, 0, canvas.width, canvas.height);
