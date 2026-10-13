@@ -118,6 +118,20 @@
             50% { opacity: 0; }
         }
 
+        /* ECRÃ DE CARREGAMENTO */
+        #tela-carregando {
+            background-color: #111;
+            z-index: 100;
+        }
+
+        .texto-carregando {
+            color: #ffd700;
+            font-size: 3.5rem;
+            text-shadow: 4px 4px 0 #000;
+            animation: piscar 1s infinite;
+            margin-bottom: 10px;
+        }
+
         #tela-pre-intro {
             background-color: #000;
             cursor: pointer;
@@ -220,7 +234,6 @@
             justify-content: center;
         }
 
-        /* GIF CORRIGIDO PARA NÃO ESTICAR */
         .gif-beijo {
             max-width: 95vw;
             max-height: 70vh; 
@@ -319,12 +332,19 @@
     </div>
 
     <div id="jogo-container">
+        
+        <!-- TELA DE CARREGAMENTO ADICIONADA AQUI -->
+        <div id="tela-carregando" class="tela">
+            <div class="texto-carregando">CARREGANDO...</div>
+            <p style="color: #ccc; font-size: 1.5rem;">A preparar a mota do Sansan!</p>
+        </div>
+
         <div id="hud" style="display: none;">
             <div class="contador">TEMPO: <span id="tempo">75</span>s</div>
             <div class="contador font-red">CORAÇÕES: <span id="coracoes">0</span>/25</div>
         </div>
 
-        <div id="tela-pre-intro" class="tela" onclick="iniciarAudioEMenu()">
+        <div id="tela-pre-intro" class="tela" onclick="iniciarAudioEMenu()" style="display: none;">
             <div class="texto-pre-intro">TOQUE PARA LIGAR O SOM</div>
         </div>
 
@@ -390,7 +410,6 @@
                 Feliz mais um ano de namoro, Sansan! Obrigada por ser o meu play 2 em todas as minhas fases difíceis. Espero zerar este jogo que é a vida com você.
             </div>
             
-            <!-- BOTÃO DE JOGAR NOVAMENTE DISCRETO E MENOR -->
             <button class="btn" onclick="reiniciarJogo()" style="background-color: #2f3640; padding: 8px 16px; font-size: 1.2rem; max-width: 220px; border: 2px solid #fff; box-shadow: 2px 2px 0px #000;">JOGAR NOVAMENTE 🔄</button>
         </div>
 
@@ -413,6 +432,36 @@
         musicaJogo.volume = 0.5;
         musicaFinal.volume = 0.6;
         somClique.volume = 0.8;
+
+        const imgMoto = new Image();
+        const imgFundo = new Image();
+        const imgCasa = new Image();
+        const imgObstaculo = new Image();
+
+        // SISTEMA DE PRELOADER: Aguarda todas as imagens pesadas carregarem antes de mostrar o menu
+        window.onload = function() {
+            let imagensCarregadas = 0;
+            const totalImagens = 6; 
+
+            function verificarCarregamento() {
+                imagensCarregadas++;
+                if (imagensCarregadas >= totalImagens) {
+                    document.getElementById('tela-carregando').style.display = 'none';
+                    document.getElementById('tela-pre-intro').style.display = 'flex';
+                }
+            }
+
+            imgMoto.onload = verificarCarregamento; imgMoto.onerror = verificarCarregamento; imgMoto.src = 'Sansan_moto.png';
+            imgFundo.onload = verificarCarregamento; imgFundo.onerror = verificarCarregamento; imgFundo.src = 'fundo.jpg';
+            imgCasa.onload = verificarCarregamento; imgCasa.onerror = verificarCarregamento; imgCasa.src = 'casa.png';
+            imgObstaculo.onload = verificarCarregamento; imgObstaculo.onerror = verificarCarregamento; imgObstaculo.src = 'obstaculo.png';
+
+            const imgIntro = new Image();
+            imgIntro.onload = verificarCarregamento; imgIntro.onerror = verificarCarregamento; imgIntro.src = 'intro.jpg';
+
+            const imgGif = new Image();
+            imgGif.onload = verificarCarregamento; imgGif.onerror = verificarCarregamento; imgGif.src = 'video beijo final.gif';
+        };
 
         function tocarClique() {
             somClique.currentTime = 0; 
@@ -474,18 +523,6 @@
         let scrollX = 0; 
         let contadorFrames = 0;
         let framesParaProximoObstaculo = 100;
-
-        const imgMoto = new Image();
-        imgMoto.src = 'Sansan_moto.png'; 
-        
-        const imgFundo = new Image();
-        imgFundo.src = 'fundo.jpg'; 
-
-        const imgCasa = new Image();
-        imgCasa.src = 'casa.png'; 
-
-        const imgObstaculo = new Image();
-        imgObstaculo.src = 'obstaculo.png'; 
 
         const jogador = {
             x: 50, y: 0, largura: 110, altura: 80,
