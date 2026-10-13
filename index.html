@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -221,11 +220,13 @@
             justify-content: center;
         }
 
-        /* GIF MAIOR E MAIS DESTACADO */
+        /* GIF CORRIGIDO PARA NÃO ESTICAR */
         .gif-beijo {
-            width: 98%;
-            max-width: 600px;
-            max-height: 75vh; 
+            max-width: 95vw;
+            max-height: 70vh; 
+            width: auto;
+            height: auto;
+            object-fit: contain; 
             border-radius: 10px;
             border: 4px solid #fff;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
@@ -389,8 +390,8 @@
                 Feliz mais um ano de namoro, Sansan! Obrigada por ser o meu play 2 em todas as minhas fases difíceis. Espero zerar este jogo que é a vida com você.
             </div>
             
-            <!-- BOTÃO DE JOGAR NOVAMENTE -->
-            <button class="btn" onclick="reiniciarJogo()" style="background-color: #3742fa;">JOGAR NOVAMENTE 🔄</button>
+            <!-- BOTÃO DE JOGAR NOVAMENTE DISCRETO E MENOR -->
+            <button class="btn" onclick="reiniciarJogo()" style="background-color: #2f3640; padding: 8px 16px; font-size: 1.2rem; max-width: 220px; border: 2px solid #fff; box-shadow: 2px 2px 0px #000;">JOGAR NOVAMENTE 🔄</button>
         </div>
 
         <canvas id="gameCanvas"></canvas>
@@ -448,7 +449,6 @@
             document.getElementById('tela-chat').style.display = 'flex';
         }
 
-        // CHAT COM AUTO-SCROLL
         function enviarResposta() {
             tocarClique();
             document.getElementById('btn-responder').style.display = 'none';
@@ -494,7 +494,7 @@
 
         let obstaculos = [];
         let coracoes = [];
-        let velocidadePista = 4; // Velocidade inicial
+        let velocidadePista = 4;
 
         function iniciarJogo() {
             tocarClique();
@@ -511,7 +511,7 @@
             jogoAtivo = true; cenaFinalAtiva = false;
             tempoRestante = 75; 
             coracoesColetados = 0; scrollX = 0;
-            velocidadePista = 4; // Reseta a velocidade
+            velocidadePista = 4; 
             obstaculos = []; coracoes = []; contadorFrames = 0; 
             framesParaProximoObstaculo = Math.floor(Math.random() * 60) + 80; 
             
@@ -558,7 +558,6 @@
             if (delta < intervaloFrame) return; 
             ultimoTempo = tempoAtual - (delta % intervaloFrame);
 
-            // SISTEMA DE ACELERAÇÃO (Aumenta a velocidade baseada nos corações coletados)
             velocidadePista = 4 + (coracoesColetados * 0.12);
 
             if (!cenaFinalAtiva) {
@@ -569,7 +568,6 @@
                 
                 if (contadorFrames >= framesParaProximoObstaculo) {
                     obstaculos.push({ x: canvas.width + 50, y: chaoY - 60, largura: 60, altura: 60 });
-                    // Fica ligeiramente mais apertado à medida que a velocidade sobe
                     framesParaProximoObstaculo = Math.floor(Math.random() * 50) + 70 - coracoesColetados; 
                     contadorFrames = 0;
                 }
@@ -643,7 +641,6 @@
                     document.getElementById('tempo').innerText = tempoRestante;
                     ctx.fillStyle = 'rgba(255, 0, 0, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
                     
-                    // VIBRAÇÃO NO CELULAR AO BATER NO OBSTÁCULO
                     if (navigator.vibrate) { navigator.vibrate(200); }
                 }
             }
@@ -684,7 +681,6 @@
                 musicaJogo.pause();
                 musicaFinal.play().catch(() => {});
 
-                // TEMPO REDUZIDO PELA METADE (3 SEGUNDOS)
                 setTimeout(() => { 
                     document.getElementById('tela-animacao-gif').style.display = 'flex'; 
                     jogoAtivo = false; 
@@ -719,7 +715,6 @@
                 ctx.fillText("MOTO", jogador.x, chaoY - 5);
             }
 
-            // TEXTO DE SUCESSO DURANTE A CENA FINAL
             if (transicaoIniciada) {
                 ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
                 ctx.fillRect(canvas.width / 2 - 170, 40, 340, 50);
@@ -727,7 +722,7 @@
                 ctx.font = "30px VT323";
                 ctx.textAlign = "center";
                 ctx.fillText("SANSAN CHEGOU A TEMPO! ❤️", canvas.width / 2, 75);
-                ctx.textAlign = "left"; // Restaura o alinhamento
+                ctx.textAlign = "left"; 
             }
         }
 
@@ -747,7 +742,7 @@
         function reiniciarJogo() {
             tocarClique();
             document.getElementById('tela-derrota').style.display = 'none';
-            document.getElementById('tela-recompensa-final').style.display = 'none'; // Esconde o fim se for jogar de novo
+            document.getElementById('tela-recompensa-final').style.display = 'none'; 
             jogador.x = 50; 
             posXPortao = canvas.width;
             transicaoIniciada = false;
