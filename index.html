@@ -60,34 +60,6 @@
         
         .font-red { color: #ff4757; font-weight: bold; }
 
-        /* BALÃO DE PENSAMENTO OTIMIZADO (ZERO LAG) */
-        #balao-pensamento {
-            display: none;
-            position: absolute;
-            left: 35px;
-            bottom: 36%;
-            background: #ffffff;
-            color: #000000;
-            border: 3px solid #000000;
-            padding: 6px 14px;
-            font-size: 1.5rem;
-            z-index: 15;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        /* Pontinha do balão */
-        #balao-pensamento::after {
-            content: '';
-            position: absolute;
-            bottom: -11px;
-            left: 35px;
-            border-width: 11px 11px 0 0;
-            border-style: solid;
-            border-color: #000000 transparent transparent transparent;
-        }
-
         .tela {
             position: absolute;
             top: 0;
@@ -370,9 +342,6 @@
             <div class="contador font-red">CORAÇÕES: <span id="coracoes">0</span>/30</div>
         </div>
 
-        <!-- BALÃO EM HTML PARA NÃO DAR LAG NO CANVAS -->
-        <div id="balao-pensamento">Os cachorros já devem estar pulando!</div>
-
         <div id="tela-pre-intro" class="tela" onclick="iniciarAudioEMenu()" style="display: none;">
             <div class="texto-pre-intro">TOQUE PARA LIGAR O SOM</div>
         </div>
@@ -450,7 +419,6 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const elementoBalao = document.getElementById('balao-pensamento');
 
         const somClique = new Audio('botão.mp3');
         const musicaMenu = new Audio('menu.mp3');
@@ -568,7 +536,7 @@
         let contadorEstrelas = 0;
 
         let balaoMostrado = false;
-        let timerBalao = null;
+        let tempoBalao = 0;
         let efeitosTexto = [];
 
         const jogador = {
@@ -599,7 +567,6 @@
 
             document.getElementById('tela-chat').style.display = 'none';
             document.getElementById('hud').style.display = 'flex';
-            elementoBalao.style.display = 'none';
             
             jogoAtivo = true; 
             cenaFinalAtiva = false;
@@ -614,6 +581,7 @@
             contadorFrames = 0; 
             contadorEstrelas = 0;
             balaoMostrado = false;
+            tempoBalao = 0;
             framesParaProximoObstaculo = Math.floor(Math.random() * 60) + 80; 
             
             document.getElementById('tempo').innerText = tempoRestante;
@@ -651,15 +619,37 @@
             posXPortao = canvas.width;
             transicaoIniciada = false;
             document.getElementById('hud').style.display = 'none';
-            elementoBalao.style.display = 'none';
         }
 
-        function mostrarBalaoSemLag() {
-            elementoBalao.style.display = 'block';
-            clearTimeout(timerBalao);
-            timerBalao = setTimeout(() => {
-                elementoBalao.style.display = 'none';
-            }, 3500);
+        // BALÃO NO ESTILO ORIGINAL, PORÉM LEVE (SEM LAG) E SEMI-TRANSPARENTE PARA NÃO ATRAPALHAR A VISÃO
+        function desenharBalaoPensamento() {
+            const larguraCaixa = 276; // Largura pré-calculada para evitar measureText (causador do lag)
+            const alturaCaixa = 30;
+            const bx = 18;
+            const by = Math.max(52, jogador.y - 38); // Segue a altura da moto sem tampar a pista à frente
+
+            // Fundo branco levemente transparente para ver obstáculos através dele se necessário
+            ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
+            ctx.fillRect(bx, by, larguraCaixa, alturaCaixa);
+            
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bx, by, larguraCaixa, alturaCaixa);
+
+            // Pontinha do balão apontando para o capacete do Sansan
+            ctx.beginPath();
+            ctx.moveTo(jogador.x + 42, by + alturaCaixa);
+            ctx.lineTo(jogador.x + 54, by + alturaCaixa);
+            ctx.lineTo(jogador.x + 46, by + alturaCaixa + 8);
+            ctx.closePath();
+            ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
+            ctx.fill();
+            ctx.stroke();
+
+            // Texto mais delicado e nítido
+            ctx.font = "19px VT323";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("Os cachorros já devem estar pulando!", bx + 10, by + 21);
         }
 
         function animar(tempoAtual) {
@@ -742,10 +732,9 @@
                     coracoesColetados++;
                     document.getElementById('coracoes').innerText = coracoesColetados;
                     
-                    // Dispara o balão em HTML leve exatamente no 15º coração (sem lag)
                     if (coracoesColetados === 15 && !balaoMostrado) {
                         balaoMostrado = true;
-                        mostrarBalaoSemLag();
+                        tempoBalao = 190; // Dura cerca de 3 segundos
                     }
 
                     if (coracoesColetados >= META_CORACOES) iniciarCenaFinal();
@@ -812,6 +801,12 @@
                 } else if (obs.x < -100) {
                     obstaculos.splice(i, 1);
                 }
+            }
+
+            // Desenha o balão por cima de tudo, mas sem atrapalhar a visão da pista
+            if (tempoBalao > 0) {
+                desenharBalaoPensamento();
+                tempoBalao--;
             }
 
             // Desenha os textos flutuantes de feedback (+5s / -5s e -1 coração)
@@ -918,7 +913,6 @@
             jogoAtivo = false;
             clearInterval(temporizador);
             musicaJogo.pause();
-            elementoBalao.style.display = 'none';
             if (!venceu) document.getElementById('tela-derrota').style.display = 'flex';
         }
 
@@ -926,7 +920,6 @@
             tocarClique();
             document.getElementById('tela-derrota').style.display = 'none';
             document.getElementById('tela-recompensa-final').style.display = 'none'; 
-            elementoBalao.style.display = 'none';
             jogador.x = 50; 
             posXPortao = canvas.width;
             transicaoIniciada = false;
