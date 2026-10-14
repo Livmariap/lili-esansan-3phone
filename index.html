@@ -439,10 +439,43 @@
         const imgObstaculo = new Image();
         const imgIntro = new Image();
 
+        // PRÉ-RENDERIZAÇÃO DO BALÃO (Desenha 1 única vez na memória para ter ZERO lag na corrida)
+        const canvasBalao = document.createElement('canvas');
+        canvasBalao.width = 270;
+        canvasBalao.height = 42;
+        const ctxBalao = canvasBalao.getContext('2d');
+
+        function prepararBalaoEmMemoria() {
+            ctxBalao.clearRect(0, 0, canvasBalao.width, canvasBalao.height);
+            
+            // Caixa branca sólida com borda pixelada
+            ctxBalao.fillStyle = "#ffffff";
+            ctxBalao.fillRect(2, 2, 256, 28);
+            ctxBalao.strokeStyle = "#000000";
+            ctxBalao.lineWidth = 2;
+            ctxBalao.strokeRect(2, 2, 256, 28);
+
+            // Pontinha do balão apontando para o Sansan
+            ctxBalao.beginPath();
+            ctxBalao.moveTo(36, 30);
+            ctxBalao.lineTo(48, 30);
+            ctxBalao.lineTo(40, 38);
+            ctxBalao.closePath();
+            ctxBalao.fillStyle = "#ffffff";
+            ctxBalao.fill();
+            ctxBalao.stroke();
+
+            // Texto renderizado apenas uma vez
+            ctxBalao.font = "18px VT323, monospace";
+            ctxBalao.fillStyle = "#000000";
+            ctxBalao.fillText("Os cachorros já devem estar pulando!", 10, 21);
+        }
+
         let jogoLiberado = false;
         function liberarJogo() {
             if (jogoLiberado) return;
             jogoLiberado = true;
+            prepararBalaoEmMemoria();
             document.getElementById('tela-carregando').style.display = 'none';
             document.getElementById('tela-pre-intro').style.display = 'flex';
             
@@ -551,6 +584,7 @@
 
         function iniciarJogo() {
             tocarClique();
+            prepararBalaoEmMemoria(); // Garante que a fonte VT323 já está aplicada na imagem do balão
             musicaMenu.pause();
             musicaMenu.currentTime = 0;
             musicaJogo.play().catch(() => {});
@@ -619,37 +653,6 @@
             posXPortao = canvas.width;
             transicaoIniciada = false;
             document.getElementById('hud').style.display = 'none';
-        }
-
-        // BALÃO NO ESTILO ORIGINAL, PORÉM LEVE (SEM LAG) E SEMI-TRANSPARENTE PARA NÃO ATRAPALHAR A VISÃO
-        function desenharBalaoPensamento() {
-            const larguraCaixa = 276; // Largura pré-calculada para evitar measureText (causador do lag)
-            const alturaCaixa = 30;
-            const bx = 18;
-            const by = Math.max(52, jogador.y - 38); // Segue a altura da moto sem tampar a pista à frente
-
-            // Fundo branco levemente transparente para ver obstáculos através dele se necessário
-            ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
-            ctx.fillRect(bx, by, larguraCaixa, alturaCaixa);
-            
-            ctx.strokeStyle = "#000000";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(bx, by, larguraCaixa, alturaCaixa);
-
-            // Pontinha do balão apontando para o capacete do Sansan
-            ctx.beginPath();
-            ctx.moveTo(jogador.x + 42, by + alturaCaixa);
-            ctx.lineTo(jogador.x + 54, by + alturaCaixa);
-            ctx.lineTo(jogador.x + 46, by + alturaCaixa + 8);
-            ctx.closePath();
-            ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
-            ctx.fill();
-            ctx.stroke();
-
-            // Texto mais delicado e nítido
-            ctx.font = "19px VT323";
-            ctx.fillStyle = "#000000";
-            ctx.fillText("Os cachorros já devem estar pulando!", bx + 10, by + 21);
         }
 
         function animar(tempoAtual) {
@@ -734,7 +737,7 @@
                     
                     if (coracoesColetados === 15 && !balaoMostrado) {
                         balaoMostrado = true;
-                        tempoBalao = 190; // Dura cerca de 3 segundos
+                        tempoBalao = 300; // 5 segundos (300 frames a 60 FPS)
                     }
 
                     if (coracoesColetados >= META_CORACOES) iniciarCenaFinal();
@@ -803,13 +806,13 @@
                 }
             }
 
-            // Desenha o balão por cima de tudo, mas sem atrapalhar a visão da pista
+            // DESENHA O BALÃO COMO UMA IMAGEM PRONTA (ZERO LAG!)
             if (tempoBalao > 0) {
-                desenharBalaoPensamento();
+                ctx.drawImage(canvasBalao, 15, Math.max(52, Math.floor(jogador.y - 42)));
                 tempoBalao--;
             }
 
-            // Desenha os textos flutuantes de feedback (+5s / -5s e -1 coração)
+            // Textos flutuantes (+5s / -5s)
             for (let i = efeitosTexto.length - 1; i >= 0; i--) {
                 let ef = efeitosTexto[i];
                 ctx.font = "28px VT323";
