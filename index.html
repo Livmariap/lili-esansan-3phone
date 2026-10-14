@@ -60,6 +60,34 @@
         
         .font-red { color: #ff4757; font-weight: bold; }
 
+        /* BALÃO DE PENSAMENTO OTIMIZADO (ZERO LAG) */
+        #balao-pensamento {
+            display: none;
+            position: absolute;
+            left: 35px;
+            bottom: 36%;
+            background: #ffffff;
+            color: #000000;
+            border: 3px solid #000000;
+            padding: 6px 14px;
+            font-size: 1.5rem;
+            z-index: 15;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* Pontinha do balão */
+        #balao-pensamento::after {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 35px;
+            border-width: 11px 11px 0 0;
+            border-style: solid;
+            border-color: #000000 transparent transparent transparent;
+        }
+
         .tela {
             position: absolute;
             top: 0;
@@ -342,6 +370,9 @@
             <div class="contador font-red">CORAÇÕES: <span id="coracoes">0</span>/30</div>
         </div>
 
+        <!-- BALÃO EM HTML PARA NÃO DAR LAG NO CANVAS -->
+        <div id="balao-pensamento">Os cachorros já devem estar pulando!</div>
+
         <div id="tela-pre-intro" class="tela" onclick="iniciarAudioEMenu()" style="display: none;">
             <div class="texto-pre-intro">TOQUE PARA LIGAR O SOM</div>
         </div>
@@ -350,7 +381,6 @@
             <div class="texto-press-start">TOQUE PARA INICIAR</div>
         </div>
 
-        <!-- INSTRUÇÕES ATUALIZADAS COM AS NOVAS REGRAS -->
         <div id="tela-instrucoes" class="tela" style="display: none;">
             <h1>COMO JOGAR</h1>
             <p>📱 Toque na tela para pular!</p>
@@ -379,10 +409,11 @@
                         Estou indo, Lili!
                         <span class="msg-time">AGORA</span>
                     </div>
-                    <button class="btn" id="btn-iniciar" style="display: none; background-color: #ff9f43; margin-top: 10px;" onclick="iniciarJogo()">ACELERAR! 🏍️</button>
                 </div>
             </div>
+            <!-- BOTÕES FORA DO CELULAR -->
             <button class="btn" id="btn-responder" onclick="enviarResposta()">Responder...</button>
+            <button class="btn" id="btn-iniciar" style="display: none; background-color: #ff9f43;" onclick="iniciarJogo()">ACELERAR! 🏍️</button>
         </div>
 
         <div id="tela-derrota" class="tela" style="display: none;">
@@ -419,6 +450,7 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const elementoBalao = document.getElementById('balao-pensamento');
 
         const somClique = new Audio('botão.mp3');
         const musicaMenu = new Audio('menu.mp3');
@@ -439,7 +471,6 @@
         const imgObstaculo = new Image();
         const imgIntro = new Image();
 
-        // SISTEMA DE CARREGAMENTO COMPLETO DO JOGO (EXCETO O GIF FINAL)
         let jogoLiberado = false;
         function liberarJogo() {
             if (jogoLiberado) return;
@@ -447,7 +478,6 @@
             document.getElementById('tela-carregando').style.display = 'none';
             document.getElementById('tela-pre-intro').style.display = 'flex';
             
-            // O GIF final é carregado em segundo plano enquanto ele navega nos menus
             document.getElementById('gif-final-img').src = 'video beijo final.gif';
         }
 
@@ -537,9 +567,8 @@
         let framesParaProximoObstaculo = 100;
         let contadorEstrelas = 0;
 
-        // Variáveis do balão de pensamento e efeitos flutuantes
         let balaoMostrado = false;
-        let tempoBalao = 0;
+        let timerBalao = null;
         let efeitosTexto = [];
 
         const jogador = {
@@ -570,6 +599,7 @@
 
             document.getElementById('tela-chat').style.display = 'none';
             document.getElementById('hud').style.display = 'flex';
+            elementoBalao.style.display = 'none';
             
             jogoAtivo = true; 
             cenaFinalAtiva = false;
@@ -584,7 +614,6 @@
             contadorFrames = 0; 
             contadorEstrelas = 0;
             balaoMostrado = false;
-            tempoBalao = 0;
             framesParaProximoObstaculo = Math.floor(Math.random() * 60) + 80; 
             
             document.getElementById('tempo').innerText = tempoRestante;
@@ -622,42 +651,15 @@
             posXPortao = canvas.width;
             transicaoIniciada = false;
             document.getElementById('hud').style.display = 'none';
+            elementoBalao.style.display = 'none';
         }
 
-        function desenharBalaoPensamento() {
-            let texto = "Os cachorros já devem estar pulando!";
-            ctx.font = "22px VT323";
-            let larguraTexto = ctx.measureText(texto).width;
-            let larguraCaixa = larguraTexto + 24;
-            let alturaCaixa = 38;
-            
-            let bx = Math.max(10, jogador.x);
-            if (bx + larguraCaixa > canvas.width - 10) {
-                bx = canvas.width - larguraCaixa - 10;
-            }
-            let by = Math.max(55, jogador.y - 52);
-
-            // Caixa do balão
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(bx, by, larguraCaixa, alturaCaixa);
-            ctx.strokeStyle = "#000000";
-            ctx.lineWidth = 3;
-            ctx.strokeRect(bx, by, larguraCaixa, alturaCaixa);
-
-            // Pontinha do balão apontando para o Sansan
-            ctx.beginPath();
-            ctx.moveTo(jogador.x + 45, by + alturaCaixa);
-            ctx.lineTo(jogador.x + 60, by + alturaCaixa);
-            ctx.lineTo(jogador.x + 50, by + alturaCaixa + 10);
-            ctx.closePath();
-            ctx.fillStyle = "#ffffff";
-            ctx.fill();
-            ctx.stroke();
-
-            // Texto do balão
-            ctx.fillStyle = "#000000";
-            ctx.textAlign = "left";
-            ctx.fillText(texto, bx + 12, by + 26);
+        function mostrarBalaoSemLag() {
+            elementoBalao.style.display = 'block';
+            clearTimeout(timerBalao);
+            timerBalao = setTimeout(() => {
+                elementoBalao.style.display = 'none';
+            }, 3500);
         }
 
         function animar(tempoAtual) {
@@ -669,26 +671,22 @@
             if (delta < intervaloFrame) return; 
             ultimoTempo = tempoAtual - (delta % intervaloFrame);
 
-            // Aceleração progressiva calibrada para 30 corações
             velocidadePista = 4 + (coracoesColetados * 0.11);
 
             if (!cenaFinalAtiva) {
                 contadorFrames++;
                 contadorEstrelas++;
 
-                // Geração de Corações
                 if (contadorFrames === Math.floor(framesParaProximoObstaculo / 2)) {
                     coracoes.push({ x: canvas.width + 50, y: chaoY - 90 - (Math.random() * 45) });
                 }
                 
-                // Geração de Obstáculos
                 if (contadorFrames >= framesParaProximoObstaculo) {
                     obstaculos.push({ x: canvas.width + 50, y: chaoY - 60, largura: 60, altura: 60 });
                     framesParaProximoObstaculo = Math.max(48, Math.floor(Math.random() * 45) + 75 - Math.floor(coracoesColetados * 0.8)); 
                     contadorFrames = 0;
                 }
 
-                // Geração de Estrelas (+5s) a cada ~7 segundos
                 if (contadorEstrelas >= 420) {
                     if ( contadorFrames > 15 && contadorFrames < framesParaProximoObstaculo - 15 ) {
                         estrelas.push({ x: canvas.width + 50, y: chaoY - 125 - (Math.random() * 35) });
@@ -728,12 +726,6 @@
                 ctx.fillStyle = "#fff"; ctx.font = "20px VT323"; ctx.fillText("MOTO", jogador.x, jogador.y + 50);
             }
 
-            // Desenha o balão de pensamento se estiver ativo (aparece 1 vez no meio do jogo)
-            if (tempoBalao > 0) {
-                desenharBalaoPensamento();
-                tempoBalao--;
-            }
-
             // Coleta de Corações
             for (let i = coracoes.length - 1; i >= 0; i--) {
                 let coracao = coracoes[i];
@@ -750,10 +742,10 @@
                     coracoesColetados++;
                     document.getElementById('coracoes').innerText = coracoesColetados;
                     
-                    // Dispara o pensamento exatamente na metade (15 corações), apenas uma vez
+                    // Dispara o balão em HTML leve exatamente no 15º coração (sem lag)
                     if (coracoesColetados === 15 && !balaoMostrado) {
                         balaoMostrado = true;
-                        tempoBalao = 210; // Dura 3,5 segundos (210 frames a 60fps)
+                        mostrarBalaoSemLag();
                     }
 
                     if (coracoesColetados >= META_CORACOES) iniciarCenaFinal();
@@ -800,7 +792,6 @@
                 if (verificarColisao(hitboxMoto, hitboxObs)) {
                     obstaculos.splice(i, 1);
                     
-                    // Perde 5 segundos e cai 1 coração
                     tempoRestante = Math.max(0, tempoRestante - 5);
                     coracoesColetados = Math.max(0, coracoesColetados - 1);
                     
@@ -845,7 +836,6 @@
         let posXPortao = canvas.width;
         let transicaoIniciada = false;
 
-        // ANIMAÇÃO DA MOTO CHEGANDO E PARANDO DO LADO DA CASA
         function desenharCenaFinal() {
             let motoAlturaFinal = 0, motoLarguraFinal = 0;
             if (imgMoto.complete && imgMoto.naturalWidth !== 0) {
@@ -928,6 +918,7 @@
             jogoAtivo = false;
             clearInterval(temporizador);
             musicaJogo.pause();
+            elementoBalao.style.display = 'none';
             if (!venceu) document.getElementById('tela-derrota').style.display = 'flex';
         }
 
@@ -935,6 +926,7 @@
             tocarClique();
             document.getElementById('tela-derrota').style.display = 'none';
             document.getElementById('tela-recompensa-final').style.display = 'none'; 
+            elementoBalao.style.display = 'none';
             jogador.x = 50; 
             posXPortao = canvas.width;
             transicaoIniciada = false;
