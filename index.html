@@ -419,6 +419,7 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const containerJogo = document.getElementById('jogo-container');
 
         const somClique = new Audio('botão.mp3');
         const musicaMenu = new Audio('menu.mp3');
@@ -510,6 +511,13 @@
             somClique.play().catch(() => {});
         }
 
+        function sacudirTela() {
+            containerJogo.style.transform = "translate(6px, 4px)";
+            setTimeout(() => { containerJogo.style.transform = "translate(-6px, -4px)"; }, 50);
+            setTimeout(() => { containerJogo.style.transform = "translate(4px, -3px)"; }, 100);
+            setTimeout(() => { containerJogo.style.transform = "none"; }, 150);
+        }
+
         let chaoY = 0;
         
         function redimensionarCanvas() {
@@ -591,7 +599,7 @@
 
         function iniciarJogo() {
             tocarClique();
-            prepararBalaoEmMemoria(); // Recalcula a caixa com a fonte carregada antes de dar a largada
+            prepararBalaoEmMemoria(); 
             musicaMenu.pause();
             musicaMenu.currentTime = 0;
             musicaJogo.play().catch(() => {});
@@ -802,7 +810,12 @@
                     ctx.fillStyle = 'rgba(255, 0, 0, 0.4)'; 
                     ctx.fillRect(0, 0, canvas.width, canvas.height); 
                     
+                    // 1. Vibração para Navegador / Itch.io
                     if (navigator.vibrate) { navigator.vibrate(250); }
+                    // 2. Vibração Nativa caso tenha o bloco Sound no MIT App Inventor
+                    if (window.AppInventor) { window.AppInventor.setWebViewString("vibrar:" + Date.now()); }
+                    // 3. Efeito visual de tremer a tela (Screen Shake)
+                    sacudirTela();
                     
                     if (tempoRestante <= 0) {
                         finalizarJogo(false);
