@@ -439,21 +439,29 @@
         const imgObstaculo = new Image();
         const imgIntro = new Image();
 
-        // PRÉ-RENDERIZAÇÃO DO BALÃO (Desenha 1 única vez na memória para ter ZERO lag na corrida)
+        // PRÉ-RENDERIZAÇÃO DINÂMICA DO BALÃO (Calcula a largura exata 1 vez na memória: não corta o texto e tem ZERO lag)
         const canvasBalao = document.createElement('canvas');
-        canvasBalao.width = 270;
-        canvasBalao.height = 42;
         const ctxBalao = canvasBalao.getContext('2d');
 
         function prepararBalaoEmMemoria() {
+            const texto = "Os cachorros já devem estar pulando!";
+            ctxBalao.font = "19px VT323, monospace";
+            
+            const larguraTexto = Math.ceil(ctxBalao.measureText(texto).width);
+            const larguraCaixa = larguraTexto + 24; 
+            
+            canvasBalao.width = larguraCaixa + 10;
+            canvasBalao.height = 44;
+
+            ctxBalao.font = "19px VT323, monospace";
             ctxBalao.clearRect(0, 0, canvasBalao.width, canvasBalao.height);
             
-            // Caixa branca sólida com borda pixelada
+            // Caixa branca na medida exata da frase
             ctxBalao.fillStyle = "#ffffff";
-            ctxBalao.fillRect(2, 2, 256, 28);
+            ctxBalao.fillRect(2, 2, larguraCaixa, 28);
             ctxBalao.strokeStyle = "#000000";
             ctxBalao.lineWidth = 2;
-            ctxBalao.strokeRect(2, 2, 256, 28);
+            ctxBalao.strokeRect(2, 2, larguraCaixa, 28);
 
             // Pontinha do balão apontando para o Sansan
             ctxBalao.beginPath();
@@ -465,10 +473,9 @@
             ctxBalao.fill();
             ctxBalao.stroke();
 
-            // Texto renderizado apenas uma vez
-            ctxBalao.font = "18px VT323, monospace";
+            // Texto completo dentro da caixa
             ctxBalao.fillStyle = "#000000";
-            ctxBalao.fillText("Os cachorros já devem estar pulando!", 10, 21);
+            ctxBalao.fillText(texto, 14, 22);
         }
 
         let jogoLiberado = false;
@@ -584,7 +591,7 @@
 
         function iniciarJogo() {
             tocarClique();
-            prepararBalaoEmMemoria(); // Garante que a fonte VT323 já está aplicada na imagem do balão
+            prepararBalaoEmMemoria(); // Recalcula a caixa com a fonte carregada antes de dar a largada
             musicaMenu.pause();
             musicaMenu.currentTime = 0;
             musicaJogo.play().catch(() => {});
@@ -806,7 +813,7 @@
                 }
             }
 
-            // DESENHA O BALÃO COMO UMA IMAGEM PRONTA (ZERO LAG!)
+            // DESENHA O BALÃO COMO UMA IMAGEM PRONTA (ZERO LAG E SEM CORTAR!)
             if (tempoBalao > 0) {
                 ctx.drawImage(canvasBalao, 15, Math.max(52, Math.floor(jogador.y - 42)));
                 tempoBalao--;
