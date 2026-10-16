@@ -289,7 +289,6 @@
             margin-bottom: 8px;
         }
 
-        /* BOTÕES FINAIS LADO A LADO E MODAL DO TOP 10 */
         .botoes-finais {
             display: flex;
             gap: 12px;
@@ -486,7 +485,7 @@
         const imgObstaculo = new Image();
         const imgIntro = new Image();
 
-        // PRÉ-RENDERIZAÇÃO DINÂMICA DO BALÃO (Calcula a largura exata 1 vez na memória: não corta o texto e tem ZERO lag)
+        // PRÉ-RENDERIZAÇÃO DINÂMICA DO BALÃO
         const canvasBalao = document.createElement('canvas');
         const ctxBalao = canvasBalao.getContext('2d');
 
@@ -503,14 +502,12 @@
             ctxBalao.font = "19px VT323, monospace";
             ctxBalao.clearRect(0, 0, canvasBalao.width, canvasBalao.height);
             
-            // Caixa branca na medida exata da frase
             ctxBalao.fillStyle = "#ffffff";
             ctxBalao.fillRect(2, 2, larguraCaixa, 28);
             ctxBalao.strokeStyle = "#000000";
             ctxBalao.lineWidth = 2;
             ctxBalao.strokeRect(2, 2, larguraCaixa, 28);
 
-            // Pontinha do balão apontando para o Sansan
             ctxBalao.beginPath();
             ctxBalao.moveTo(36, 30);
             ctxBalao.lineTo(48, 30);
@@ -520,7 +517,6 @@
             ctxBalao.fill();
             ctxBalao.stroke();
 
-            // Texto completo dentro da caixa
             ctxBalao.fillStyle = "#000000";
             ctxBalao.fillText(texto, 14, 22);
         }
@@ -564,12 +560,14 @@
             setTimeout(() => { containerJogo.style.transform = "none"; }, 150);
         }
 
-        // SISTEMA DE TOP 10 RECORDES SALVO NO CELULAR DO USUÁRIO
+        // SISTEMA DE TOP 10 RECORDES (ROBUSTO E SEGURO)
         let idUltimoRecorde = null;
 
         function salvarRecorde(tempoSobrando) {
             try {
-                let lista = JSON.parse(localStorage.getItem('top10_lili_sansan') || '[]');
+                let dadosSalvos = localStorage.getItem('top10_lili_sansan');
+                let lista = dadosSalvos ? JSON.parse(dadosSalvos) : [];
+                
                 let agora = new Date();
                 let dia = String(agora.getDate()).padStart(2, '0');
                 let mes = String(agora.getMonth() + 1).padStart(2, '0');
@@ -582,12 +580,12 @@
                     data: `${dia}/${mes} ${hora}`
                 });
 
-                // Ordena do maior tempo sobrando para o menor e mantém apenas os 10 melhores
                 lista.sort((a, b) => b.tempo - a.tempo);
                 lista = lista.slice(0, 10);
+                
                 localStorage.setItem('top10_lili_sansan', JSON.stringify(lista));
             } catch (e) {
-                console.log("Erro ao acessar localStorage");
+                console.log("Erro ao salvar no localStorage: ", e);
             }
         }
 
@@ -598,8 +596,13 @@
 
             let lista = [];
             try {
-                lista = JSON.parse(localStorage.getItem('top10_lili_sansan') || '[]');
-            } catch (e) {}
+                let dadosSalvos = localStorage.getItem('top10_lili_sansan');
+                if (dadosSalvos) {
+                    lista = JSON.parse(dadosSalvos);
+                }
+            } catch (e) {
+                console.log("Erro ao ler localStorage: ", e);
+            }
 
             if (lista.length === 0) {
                 containerLista.innerHTML = '<p style="margin: 15px 0; color: #ccc;">Nenhum recorde registrado ainda!</p>';
@@ -772,7 +775,9 @@
             posXPortao = canvas.width;
             transicaoIniciada = false;
             document.getElementById('hud').style.display = 'none';
-            salvarRecorde(tempoRestante); // Salva os segundos que sobraram ao pegar o 30º coração
+            
+            // Salva o recorde garantido no exato momento da vitória
+            salvarRecorde(tempoRestante);
         }
 
         function animar(tempoAtual) {
@@ -915,11 +920,8 @@
                     ctx.fillStyle = 'rgba(255, 0, 0, 0.4)'; 
                     ctx.fillRect(0, 0, canvas.width, canvas.height); 
                     
-                    // 1. Vibração para Navegador / Itch.io
                     if (navigator.vibrate) { navigator.vibrate(250); }
-                    // 2. Vibração Nativa caso tenha o bloco Sound no MIT App Inventor
                     if (window.AppInventor) { window.AppInventor.setWebViewString("vibrar:" + Date.now()); }
-                    // 3. Efeito visual de tremer a tela (Screen Shake)
                     sacudirTela();
                     
                     if (tempoRestante <= 0) {
@@ -931,13 +933,11 @@
                 }
             }
 
-            // DESENHA O BALÃO COMO UMA IMAGEM PRONTA (ZERO LAG E SEM CORTAR!)
             if (tempoBalao > 0) {
                 ctx.drawImage(canvasBalao, 15, Math.max(52, Math.floor(jogador.y - 42)));
                 tempoBalao--;
             }
 
-            // Textos flutuantes (+5s / -5s)
             for (let i = efeitosTexto.length - 1; i >= 0; i--) {
                 let ef = efeitosTexto[i];
                 ctx.font = "28px VT323";
@@ -1047,6 +1047,7 @@
         function reiniciarJogo() {
             tocarClique();
             document.getElementById('tela-derrota').style.display = 'none';
+            document.getElementById('tela-animacao-gif').style.display = 'none';
             document.getElementById('tela-recompensa-final').style.display = 'none'; 
             document.getElementById('tela-top10').style.display = 'none';
             jogador.x = 50; 
